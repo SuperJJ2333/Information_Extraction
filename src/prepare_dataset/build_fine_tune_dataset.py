@@ -19,8 +19,9 @@ info_columns = [
     "访问天数", "主要交流内容", "是否属于数字政府议题", "政策议题"
 ]
 
+
 # 准备输出文件
-output_file = 'output.jsonl'
+output_file = '../fine_tune/output.jsonl'
 with open(output_file, 'w', encoding='utf-8') as f_out:
     for index, row in df.iterrows():
 
@@ -67,10 +68,18 @@ with open(output_file, 'w', encoding='utf-8') as f_out:
             value = str(row[col]).replace('\n', ',') if pd.notna(row[col]) else ""
             assistant_content[col] = value
 
+        # 创建一个新的字典来保持顺序
+        new_assistant_content = {}
+        for key in assistant_content:
+            if key == "主要交流内容":
+                new_assistant_content["新闻摘要"] = assistant_content[key]
+            else:
+                new_assistant_content[key] = assistant_content[key]
+
         # 生成assistant的回答
         response = {
             "role": "assistant",
-            "content": f"{json.dumps(assistant_content, ensure_ascii=False)}"  # 直接保留字典形式
+            "content": f"{json.dumps(new_assistant_content, ensure_ascii=False)}"  # 直接保留字典形式
         }
 
         # 生成最终的jsonl格式
