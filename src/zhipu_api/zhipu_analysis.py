@@ -1,5 +1,7 @@
 import logging
 import os
+from datetime import datetime
+
 import pandas as pd
 import json
 from zhipuai import ZhipuAI  # 假设 zhipuai 是你使用的模型 SDK
@@ -122,6 +124,7 @@ class NewsExtractor:
 
             # 提取文件名
             file_name = os.path.basename(file_path)
+            base_name = '_'.join(file_name.split('_')[:-1])  # get "四川省_学习考察"
 
             # 确保 DataFrame 包含所有 info_columns 中定义的列
             for col in self.info_columns:
@@ -129,7 +132,7 @@ class NewsExtractor:
                     df_copy[col] = ""
 
             # 只处理符合条件的行
-            df_filtered = df[df['label'] == '政府领导到其他城市考察学习或访问']
+            df_filtered = df_copy[df_copy['label'] == '政府领导到其他城市考察学习或访问']
 
             logger.info(f"{file_path} 开始分析")
 
@@ -157,7 +160,8 @@ class NewsExtractor:
                             df_copy[key] = None
                         df_copy.at[index, key] = value
 
-            new_file_path = os.path.join(self.save_path, file_name)
+            current_date = datetime.now().strftime("%m%d")
+            new_file_path = os.path.join(self.save_path, f'{base_name}_分析结果_glm4_{current_date}.csv')
             # 生成新文件名并保存新的 CSV 文件
             df_copy.to_csv(new_file_path, index=False, encoding='utf-8')
             logger.info(f"{new_file_path} 分析完成并保存")
