@@ -111,3 +111,101 @@ def is_list_format(string):
     except (ValueError, SyntaxError):
         # 如果解析失败，说明不是有效的 Python 表达式，或者不是 list 格式
         return False
+
+
+def is_position_sensitive(news_text):
+
+    # 检查全文是否包含 "市长" 或 "省长"
+    if "市长" in news_text:
+        return True
+    if "省长" in news_text:
+        return True
+
+    # 将新闻文本按照句子进行分割
+    sentences = re.split('[。！？；\n]', news_text)
+
+    # 遍历每个句子
+    for sentence in sentences:
+        sentence = sentence.strip()
+
+        # 检查 "市委" 和 "书记"
+        if "市委" in sentence and "书记" in sentence:
+            shiwei_positions = [m.start() for m in re.finditer("市委", sentence)]
+            shuji_positions = [m.start() for m in re.finditer("书记", sentence)]
+            for pos_shiwei in shiwei_positions:
+                for pos_shuji in shuji_positions:
+                    end_pos_shiwei = pos_shiwei + len("市委")
+                    end_pos_shuji = pos_shuji + len("书记")
+                    if pos_shiwei <= pos_shuji:
+                        distance = pos_shuji - end_pos_shiwei
+                    else:
+                        distance = pos_shiwei - end_pos_shuji
+                    if distance <= 5:
+                        return True
+
+        # 检查 "省委" 和 "书记"
+        if "省委" in sentence and "书记" in sentence:
+            shengwei_positions = [m.start() for m in re.finditer("省委", sentence)]
+            shuji_positions = [m.start() for m in re.finditer("书记", sentence)]
+            for pos_shengwei in shengwei_positions:
+                for pos_shuji in shuji_positions:
+                    end_pos_shengwei = pos_shengwei + len("省委")
+                    end_pos_shuji = pos_shuji + len("书记")
+                    if pos_shengwei <= pos_shuji:
+                        distance = pos_shuji - end_pos_shengwei
+                    else:
+                        distance = pos_shengwei - end_pos_shuji
+                    if distance <= 5:
+                        return True
+    return False
+
+def is_position_sensitive_cities(news_text):
+    if not isinstance(news_text, str):
+        return False
+
+    # 检查全文是否包含 "市长"
+    if "市长" in news_text:
+        return True
+
+    # 将新闻文本按照句子进行分割
+    sentences = re.split('[。！？；\n]', news_text)
+
+    # 遍历每个句子
+    for sentence in sentences:
+        sentence = sentence.strip()
+
+        # 检查 "市委" 和 "书记"
+        if "市委" in sentence and "书记" in sentence:
+            shiwei_positions = [m.start() for m in re.finditer("市委", sentence)]
+            shuji_positions = [m.start() for m in re.finditer("书记", sentence)]
+            for pos_shiwei in shiwei_positions:
+                for pos_shuji in shuji_positions:
+                    end_pos_shiwei = pos_shiwei + len("市委")
+                    end_pos_shuji = pos_shuji + len("书记")
+                    if pos_shiwei <= pos_shuji:
+                        distance = pos_shuji - end_pos_shiwei
+                    else:
+                        distance = pos_shiwei - end_pos_shuji
+                    if distance <= 5:
+                        return True
+
+    return False
+
+
+def process_content(x):
+    # 如果长度已经超过1500，则直接返回
+    if len(x) > 1500:
+        return x
+
+    combined = []
+    current_length = 0
+
+    for sentence in x:
+        if current_length + len(sentence) <= 1000:
+            combined.append(sentence)
+            current_length += len(sentence)
+        else:
+            break  # 达到最大长度，停止合并
+
+    return ','.join(combined)  # 返回合并后的字符串
+

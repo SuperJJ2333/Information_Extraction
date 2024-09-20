@@ -6,6 +6,8 @@ from zhipuai import ZhipuAI  # 假设 zhipuai 是你使用的模型 SDK
 from concurrent.futures import ThreadPoolExecutor
 from zhipuai.core._errors import APIRequestFailedError
 
+from utils.preprocess_data import *
+
 # 创建日志器
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -113,6 +115,11 @@ class NewsExtractor:
         try:
             df = pd.read_csv(file_path)
             df_copy = df.copy()
+
+            # 过滤出“市长”或“书记”等职位的新闻
+            df_copy['is_match'] = df_copy['content'].apply(is_position_sensitive)
+            df_copy = df_copy[df_copy['is_match'] == True]
+
             # 提取文件名
             file_name = os.path.basename(file_path)
 
