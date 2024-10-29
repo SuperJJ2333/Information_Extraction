@@ -30,6 +30,15 @@ logger.addHandler(console_handler)
 
 
 class TextClassification:
+    """
+    对data中的数据进行分类
+    分类结果保存到processed_data中
+
+    作用：
+    1. 识别“政府领导到其他城市考察学习或访问”、“不属于政府领导到其他城市考察学习的新闻”、“其他”这三个类别
+    2. 给出每个类别的概率
+    3. 求出每个类别的平均分
+    """
     def __init__(self):
         self.folder_path = "../../data/Total_time_range_data"
         self.save_path = "../../processed_data/Total_time_classified_data"
@@ -43,7 +52,7 @@ class TextClassification:
 
     def read_xlsx(self):
         """
-        读取xlsx文件
+        读取指定文件夹中的xlsx文件
         :return:
         """
         if not os.path.exists(self.folder_path):
@@ -66,7 +75,7 @@ class TextClassification:
 
     def main_classify(self):
         """
-        分类
+        对所有已加载的数据框中的文本内容进行分类
         :return:
         """
         if not self.dataframe_dict:
@@ -74,9 +83,11 @@ class TextClassification:
             return False
         progress_bar = tqdm(self.dataframe_dict.items(), total=len(self.dataframe_dict),  desc="分类进度")
 
+        # 设置进度条以跟踪分类进度
         for key, df in progress_bar:
             self.file_name = key
             logging.info("\n正在清洗: {}".format(self.file_name))
+
             # 预处理数据
             df = preprocess_data(df)
             # 分类数据
@@ -89,7 +100,7 @@ class TextClassification:
 
     def loop_classify(self, data):
         """
-        循环分类
+        使用多次迭代对内容列进行分类以提高可靠性
         :return:
         """
 
